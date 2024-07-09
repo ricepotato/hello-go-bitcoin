@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/ricepotato/hello-go-bitcoin/btcw"
 )
 
@@ -17,10 +18,13 @@ func main() {
 	wallet2 := btcw.GetWalletFromPrivateKeyString(address2PrivKey)
 
 	// miruDdUTqQv9eXMPPwXL73b9iy4gv8KeuH
-	wallet1TestnetAddress := wallet1.GetAddress(btcw.BITCOIN_TESTNET_VERSION)
+	wallet1TestnetAddress := wallet1.GetLegacyAddress(btcw.BITCOIN_TESTNET_VERSION)
 	// mshprpAi3YVjsiLQNNBP1z535K1YK6NLfa
-	wallet2TestnetAddress := wallet2.GetAddress(btcw.BITCOIN_TESTNET_VERSION)
+	wallet2TestnetAddress := wallet2.GetLegacyAddress(btcw.BITCOIN_TESTNET_VERSION)
 
 	fmt.Printf("Your bitcoin testnet address : %s\n", wallet1TestnetAddress)
 	fmt.Printf("Your bitcoin testnet address : %s\n", wallet2TestnetAddress)
+
+	segwitAddress := wallet1.GetSegwitAddress(&chaincfg.MainNetParams)
+	fmt.Printf("Your bitcoin segwit address : %s\n", segwitAddress)
 }
