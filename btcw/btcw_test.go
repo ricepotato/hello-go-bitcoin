@@ -147,7 +147,7 @@ func TestWifStringFromLegacyAddressMainnet(t *testing.T) {
 	}
 }
 
-func TestWifStringFromNativeSegwitAddressTestnet(t *testing.T) {
+func TestWif1StringFromNativeSegwitAddressTestnet(t *testing.T) {
 	// P2WPKH 방식 bc1 으로 시작하는 주소 Testnet
 	wif1 := "L3F6LJgS4RJm1SJpFcQuZVFBoJ1veBowNm5Vwz8sLb4RWtPFpjPH"
 	compressedWif, _ := btcutil.DecodeWIF(wif1)
@@ -159,6 +159,24 @@ func TestWifStringFromNativeSegwitAddressTestnet(t *testing.T) {
 	addressPubKey, _ := btcutil.NewAddressWitnessPubKeyHash(hashedPubKey, &chaincfg.TestNet3Params)
 	encodedAddressPubKey := addressPubKey.EncodeAddress()
 	expectedAddress := "tb1qz40mujlemrru7t8t3yn3u5v3e9htmu5kektgme"
+
+	if encodedAddressPubKey != expectedAddress {
+		t.Errorf("GetWalletFromPrivateKeyString failed to generate a wallet from a private key string")
+	}
+}
+
+func TestWif2StringFromNativeSegwitAddressTestnet(t *testing.T) {
+	// P2WPKH 방식 bc1 으로 시작하는 주소 Testnet
+	wif1 := "cNX9o7YiXvbRzY5Gu1ir15fHF1VuUurKJEyxcYq2ceAEEDSLCyYp"
+	compressedWif, _ := btcutil.DecodeWIF(wif1)
+	if !compressedWif.CompressPubKey {
+		t.Errorf("CompressPubKey should be true")
+	}
+
+	hashedPubKey := hashPublicKey(compressedWif.PrivKey.PubKey().SerializeCompressed())
+	addressPubKey, _ := btcutil.NewAddressWitnessPubKeyHash(hashedPubKey, &chaincfg.TestNet3Params)
+	encodedAddressPubKey := addressPubKey.EncodeAddress()
+	expectedAddress := "tb1qf9k7gahvkcngazw3hwaclh6dqmc0g38ke3295q"
 
 	if encodedAddressPubKey != expectedAddress {
 		t.Errorf("GetWalletFromPrivateKeyString failed to generate a wallet from a private key string")
@@ -219,4 +237,22 @@ func TestWif2StringFromLegacyAddress(t *testing.T) {
 	if encodedAddressPubKey != expectedAddress {
 		t.Errorf("GetWalletFromPrivateKeyString failed to generate a wallet from a private key string")
 	}
+}
+
+func TestCreateWalletFromNewWif(t *testing.T) {
+	privKey, _ := btcec.NewPrivateKey()
+	mainnetWif, _ := btcutil.NewWIF(privKey, &chaincfg.MainNetParams, true)
+	testnetWif, _ := btcutil.NewWIF(privKey, &chaincfg.TestNet3Params, true)
+	hashedPubKey := hashPublicKey(privKey.PubKey().SerializeCompressed())
+	mainnetAddressPubKey, _ := btcutil.NewAddressWitnessPubKeyHash(hashedPubKey, &chaincfg.MainNetParams)
+	testnetAddressPubKey, _ := btcutil.NewAddressWitnessPubKeyHash(hashedPubKey, &chaincfg.TestNet3Params)
+
+	fmt.Printf("mainnet wif : %s\n", mainnetWif.String())
+	fmt.Printf("testnet wif : %s\n", testnetWif.String())
+
+	mainnetAddress := mainnetAddressPubKey.EncodeAddress()
+	testnetAddress := testnetAddressPubKey.EncodeAddress()
+
+	fmt.Printf("mainnet address : %s\n", mainnetAddress)
+	fmt.Printf("testnet address : %s\n", testnetAddress)
 }

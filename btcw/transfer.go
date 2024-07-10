@@ -131,11 +131,13 @@ func CreateTransferTransaction(fromAddress string, toAddress string, privKey []b
 	pKey, _ := btcec.PrivKeyFromBytes(privKey)
 
 	for i := range sourceUTXOs {
-		sigScript, err := txscript.SignatureScript(tx, i, sourcePkScript, txscript.SigHashAll, pKey, true)
+		outputFetcher := txscript.NewCannedPrevOutputFetcher(sourcePkScript, sourceUTXOs[i].Amount.Int64())
+		txSigHashes := txscript.NewTxSigHashes(tx, outputFetcher)
+		txWitness, err := txscript.WitnessSignature(tx, txSigHashes, i, sourceUTXOs[i].Amount.Int64(), sourcePkScript, txscript.SigHashAll, pKey, true)
 		if err != nil {
 			log.Fatalf("could not generate pubSig; err: %v", err)
 		}
-		tx.TxIn[i].SignatureScript = sigScript
+		tx.TxIn[i].Witness = txWitness
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, tx.SerializeSize()))
@@ -208,6 +210,10 @@ func marshalUTXOs(utxos []*UTXO, amount, feeRate *big.Int) ([]*UTXO, *big.Int, e
 	exactTxSize := calculateTotalTxBytes(len(sumSmallUTXOs), 2)
 	totalFee := new(big.Int).Mul(feeRate, big.NewInt(int64(exactTxSize)))
 	totalTxAmount := new(big.Int).Add(totalFee, amount)
+
+	log.Printf("exactTxSize: %d", totalTxAmount)
+	log.Printf("totalFee: %d", totalFee)
+	log.Printf("totalTxAmount: %d", totalTxAmount)
 
 	switch sumSmall.Cmp(totalTxAmount) {
 	case 0:
