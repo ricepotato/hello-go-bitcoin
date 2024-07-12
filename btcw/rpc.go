@@ -50,6 +50,7 @@ func SendRawTransaction(signedhex string) (string, error) {
 
 	if resp.StatusCode != 200 {
 		bodyText := string(body)
+		log.Fatal(bodyText)
 		return "", fmt.Errorf("failed to send raw transaction. status code: %d text: %s", resp.StatusCode, bodyText)
 	}
 

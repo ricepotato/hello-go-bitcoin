@@ -29,6 +29,7 @@ type UTXO struct {
 }
 
 func CreateTransferTransaction(fromAddress string, toAddress string, privKey []byte, amountSatoshi int64) (string, error) {
+	fmt.Printf("%s -> %s\n", fromAddress, toAddress)
 	unspentTXOs, err := GetUTXO(fromAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -138,6 +139,8 @@ func CreateTransferTransaction(fromAddress string, toAddress string, privKey []b
 			log.Fatalf("could not generate pubSig; err: %v", err)
 		}
 		tx.TxIn[i].Witness = txWitness
+
+		fmt.Printf("txWitness: %v\n", txWitness)
 	}
 
 	buf := bytes.NewBuffer(make([]byte, 0, tx.SerializeSize()))
@@ -326,13 +329,10 @@ func GetCurrentFeeRate() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// convert to satoshis to bytes
 	// feeRate := big.NewInt(int64(msg.Result * 1.0E8))
 	// convert to satoshis to kb
 	feeRate := big.NewInt(int64(fee * 1.0e5))
-
-	fmt.Printf("fee rate: %s\n", feeRate)
 
 	return feeRate, nil
 }

@@ -135,3 +135,36 @@ func TestTransferCoinNativeSegwit(t *testing.T) {
 
 	fmt.Printf("txHash : %s", txHash)
 }
+
+func TestCreateTransferTransactionABCWalletPrivateKey(t *testing.T) {
+	// mpc (dev) stwktwvn+5@gmail.com
+	// private key: 0xb6d6b2f9db22882e1e5187bfdfdc4e790582381dbc1f79463b83af307d9c98e1
+	// public  key: 0x0370668a8cc1dad0fa5e9cb4c910a8ba296a71cf62c416c1ad3bbccca6456a96e2
+
+	privateKey := "b6d6b2f9db22882e1e5187bfdfdc4e790582381dbc1f79463b83af307d9c98e1"
+	expectedPubKey := "0370668a8cc1dad0fa5e9cb4c910a8ba296a71cf62c416c1ad3bbccca6456a96e2"
+	expectedAddress := "tb1qz40mujlemrru7t8t3yn3u5v3e9htmu5kektgme"
+
+	privKeyBytes, _ := HexToBytes(privateKey)
+	privKey, _ := btcec.PrivKeyFromBytes(privKeyBytes)
+	testnetWif, _ := btcutil.NewWIF(privKey, &chaincfg.TestNet3Params, true)
+
+	privKeyCompressed := testnetWif.PrivKey.PubKey().SerializeCompressed()
+
+	if expectedPubKey != hex.EncodeToString(privKeyCompressed) {
+		t.Errorf("Public key should be equal")
+	}
+
+	addressPubkey, _ := btcutil.NewAddressWitnessPubKeyHash(hashPublicKey(privKeyCompressed), &chaincfg.TestNet3Params)
+	fromAddress := addressPubkey.EncodeAddress()
+
+	if fromAddress != "tb1ql2lhe2h586ts5cfrxcrlgelnzae44stw4s2u2h" {
+		t.Errorf("Address should be equal")
+	}
+
+	var amountSatoshi int64 = 1000
+	txHash, _ := CreateTransferTransaction(fromAddress, expectedAddress, testnetWif.PrivKey.Serialize(), amountSatoshi)
+	fmt.Printf("txHash : %s\n", txHash)
+	txIdHash, _ := SendRawTransaction(txHash)
+	fmt.Printf("txIdHash : %s\n", txIdHash)
+}
